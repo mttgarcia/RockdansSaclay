@@ -1,4 +1,4 @@
-package participant;
+package part;
 
 import javacard.framework.APDU;
 import javacard.framework.Applet;
