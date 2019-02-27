@@ -39,15 +39,20 @@ def set_nom(nom):
 #Fonction qui initialise la valeur de prenom
 def set_prenom(prenom)
     p = [CLASS_APPLET, INS_SET_PRENOM, 0x00, 0x00, len(prenom)] + str2array(prenom)+[0x00]
-    print(p) #On affiche n
-    connection.transmit(n) #Envoi le nom à la java card et retourne la réponse
+    print(p) #On affiche p
+    connection.transmit(p) #Envoi le prenom à la java card et retourne la réponse
 
 #Fonction qui initialise la valeur de Numéro du participant
+def set_numpart(numpart)
+    nump = [CLASS_APPLET, INS_SET_NUMPARTICIPANT, 0x00, 0x00, len(numpart)] + str2array(numpart)+[0x00]
+    print(nump) #On affiche nump
+    connection.transmit(nump) #Envoi le numero du participant à la java card et retourne la réponse
 
-#Fonction qui initialise la valeur à payer
+#Fonction qui initialise la valeur du credit
+def set_credit(credit)
+    cred = [CLASS_APPLET, INS_SET_?????, 0x00, 0x00, len(credit)] + str2array(credit)+[0x00]
+    print(cred) #On affiche le crédit
+    connection.transmit(credit) #Envoi le crédit à la java card et retourne la réponse
 
 #Déconnexion de la carte
 connection.disconnect()
-
-#Variable à set : nom/prenom/numeroparticipant
-#Variable incrémentée : credit 
