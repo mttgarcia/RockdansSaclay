@@ -1,0 +1,20 @@
+from smartcard.System import readers
+r=readers()
+
+connection=r[0].createConnection()
+connection.connect()
+
+#Selection AID
+data, sw1, sw2 = connection.transmit([0x00,0xA4,0x04,0x00,0x08,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08])
+
+prix = input("Entrez le prix :")
+
+#decrementer le credit de prix
+data, sw1, sw2 = connection.transmit([0xB0,0x03,0x00,0x00,0x01,0x00,0x7F])
+
+#Afficher le credit
+data, sw1, sw2 = connection.transmit([0xB0,0x02,0x00,0x00,0x01,0x00,0x7F])
+print('Le credit est de :',data)
+
+connection.disconnect()
+
