@@ -52,7 +52,6 @@ print ("Le nom enregistré est : ", nom)
 #Conversion en hexa
 nom = nom.encode().hex()
 print ("Hexa : ", nom)
-nom = nom.replace("0x",'')
 if (len(nom)<taille_name):
 	for i in range(taille_name-len(nom)):
 		nom = nom + '0'
