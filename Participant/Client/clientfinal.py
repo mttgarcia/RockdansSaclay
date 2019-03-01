@@ -16,10 +16,10 @@ import codecs
 taille_name = 24
 taille_numpart = 5
 
-r = open("num_participant.txt","r")
+r = open("Client/num_participant.txt","r")
 num_part = r.read()
 r.close()
-w = open("num_participant.txt","w")
+w = open("Client/num_participant.txt","w")
 compteur = int(num_part)+1
 if (len(num_part)<taille_numpart):
 	for i in range(taille_numpart-len(num_part)):
