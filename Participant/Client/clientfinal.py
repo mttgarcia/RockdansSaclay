@@ -68,6 +68,7 @@ elif len(prenom) > 12:
 
 print ("Le prenom enregistré est : ", prenom)
 
+#Conversion en hexa
 prenom = prenom.encode().hex()
 if (len(prenom)<taille_name):
 	for i in range(taille_name-len(prenom)):
