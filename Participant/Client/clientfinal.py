@@ -14,7 +14,7 @@ import codecs
 
 #Taille prédéfinie
 taille_name = 24
-taille_numpart = 5
+taille_numpart = 10
 
 r = open("Client/num_participant.txt","r")
 num_part = r.read()
