@@ -11,7 +11,7 @@ def connexion():
         if ((int(sw1)!=144) or (int(sw2)!=0)):
             print("Probleme de communication")
             sys.exit()
-        if((int(sw1)==144)and(int(sw2)==0)) :
+        if((int(sw1)==144) and (int(sw2)==0)) :
                 print("Connexion etablie")
         #Entree du code pin
         print("Entrez le code pin :")
@@ -22,10 +22,10 @@ def connexion():
         data, sw1, sw2 = connection.transmit([0xB0,0x00,0x00,0x00,0x02,pin1,pin2])
         #print(hex(sw1),hex(sw2))
 
-        if((int(sw1)==99)and(int(sw2)==3)):
+        if((int(sw1)==99) and (int(sw2)==3)):
                 print("Pin incorrecte")
                 sys.exit()
-        if((int(sw1)==144)and(int(sw2)==0)) :
+        if((int(sw1)==144) and (int(sw2)==0)) :
                 print("Pin correcte")
         return connection
 
@@ -45,7 +45,7 @@ def payer(connection):
         else :
                 data, sw1, sw2 = connection.transmit([0xB0,0x2,0x00,0x00,0x00,debit])
                 #print(hex(sw1),hex(sw2))
-                if((int(sw1)==99)and(int(sw2)==1)) :
+                if((int(sw1)==99) and (int(sw2)==1)) :
                         print("Solde insufissant")
                 afficher_credit(connection)
         return debit
