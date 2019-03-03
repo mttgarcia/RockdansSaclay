@@ -19,7 +19,7 @@ global AUTH
 AUTH = False
 
 def connexion():
-    #Tant que la carte n'a pas été inséré
+    #Tant que la carte n'a pas été insérée
     while (True):
         try :
             r=readers()
@@ -28,10 +28,10 @@ def connexion():
             #Selection AID
             data, sw1, sw2 = connection.transmit([0x00,0xA4,0x04,0x00,0x08,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08])
             if ((int(sw1)!=144) or (int(sw2)!=0)):
-                print("Probleme de communication")
+                print("Problème de communication")
                 sys.exit()
             if((int(sw1)==144) and (int(sw2)==0)) :
-                    print("Connexion etablie")
+                    print("Connexion établie")
             if(AUTH == False):
                 authentification(connection)
             break
@@ -39,14 +39,14 @@ def connexion():
             print("Veuillez insérer la carte")
             time.sleep(5)
         except CardConnectionException:
-            print("La carte a été retiré")
+            print("La carte a été retirée")
             print("Veuillez insérer la carte")
     return connection
 
 def entrer_pin(connection):
     global PIN
     try:
-        print("Entrez le code pin :")
+        print("Entrez le code pin : ")
         while(True):
             try:
                 pin=input()
@@ -62,14 +62,14 @@ def entrer_pin(connection):
         #Si le code Pin est incorrecte 
         #On prévient et on sort
         if((int(sw1)==99) and (int(sw2)==3)):
-                print("Pin incorrecte")
+                print("Pin incorrect")
                 sys.exit()
-        #Si le code Pin est correct on continue
+        #Si le code Pin est correct on continu
         if((int(sw1)==144) and (int(sw2)==0)) :
-                print("Pin correcte")
+                print("Pin correct")
                 PIN = True
     except CardConnectionException:
-            print("La carte a été retiré")
+            print("La carte a été retirée")
             sys.exit()
 
 def afficher_credit(connection):
@@ -77,52 +77,52 @@ def afficher_credit(connection):
         if (PIN == False):
             entrer_pin(connection)
         #Affichage du credit
-        print("Voici le credit restant :")
+        print("Voici le crédit restant :")
         data, sw1, sw2 = connection.transmit([0xB0,0x01,0x00,0x00,0x00])
         #On récupére le crédit en deux byte, on le reforme en int
         credit = (data[0]<<8)+data[1]
         print (credit)
     except CardConnectionException:
-            print("La carte a été retiré")
+            print("La carte a été retirée")
             sys.exit()
 
 def payer(connection):
     try:
         if (PIN == False) :
             entrer_pin(connection)
-        print("Entrez le montant a debiter")
+        print("Entrez le montant a débiter")
         debit = int(input())
         if(debit>255) :
-                print("Le debit doit être inferrieur à 255")
+                print("Le débit doit être inférieur à 255")
         else :
             data, sw1, sw2 = connection.transmit([0xB0,0x2,0x00,0x00,0x00,debit])
             if((int(sw1)==99) and (int(sw2)==1)) :
-                    print("Solde insufissant")
+                    print("Solde insuffisant")
             log(connection,debit)
-            print("Vous avez été débité de",debit)
+            print("Vous avez été débité de ",debit)
             return debit, connection
     except CardConnectionException:
-        print("La carte a été retiré")
+        print("La carte a été retirée")
         sys.exit()
 
 def crediter(connection):
     global PIN
     try:
         debit, connection = payer(connection)
-        #On deconecte la carte, et on laisse 3s pour retirer la carte
+        #On déconnecte la carte, et on laisse 3s pour retirer la carte
         connection.disconnect()
         PIN = False
-        print("Retirer la carte")
+        print("Retirez la carte")
         time.sleep(3)
         #Puis on laisse 10s pour insérer la seconde carte 
-        print("Entrer la carte a crediter")
+        print("Insérez la carte a créditer")
         time.sleep(10)
         connection= connexion()
         data, sw1, sw2 = connection.transmit([0xB0,0x03,0x00,0x00,0x00,debit])
         print ("Le transfert à été effectué")
         return connection
     except CardConnectionException:
-        print("La carte a été retiré")
+        print("La carte a été retirée")
         sys.exit() 
 
 def authentification(connection):
@@ -134,11 +134,11 @@ def authentification(connection):
     num_part = ''
     cpt = 0
     for i in data:
-        #Les 56 premieres cases du tab data correspondent à la signature
+        #Les 56 premières cases du tab data correspondent à la signature
         if cpt<56:
             s = hex(i)
-            #Si il nous retourne un chiffre<16 il faut ajouter un zero avant
-            #Par soucis de cohérence car on retire tout les 0x à la ligne 108
+            #Si il nous retourne un chiffre<16 il faut ajouter un zéro avant
+            #Par soucis de cohérence car on retire tous les 0x à la ligne 108
             #exemple : si on a 0xc on modifie pour avoir 0x0c
             #Si on avait 0xc0x7f on obtient après le replace('Ox','') c7f
             #Alors que sur la signature de la carte on a 0c7f
@@ -153,22 +153,22 @@ def authentification(connection):
                 s = '0' + s
             num_part = num_part + s
         cpt += 1
-    #Le famaux replace pour retirer la 0x
+    #Le fameux replace pour retirer la 0x
     sig = sig.replace('0x','')
     #On repasse la signature en byte pour le verify
     sig = bytes.fromhex(sig)
-    #De repace le numéro participant en byte pour le verify
+    #De repasse le numéro participant en byte pour le verify
     num_part = num_part.replace('0x','').encode()
     try:
         #Si il retourne vrai on l'envoie à connexion
         vk.verify(sig, num_part)
-        print("Carte authentifié !")
+        print("Carte authentifiée !")
         AUTH = True
         return 
     #Si il retourne l'exception mauvaise signature on prévient connexion
     except BadSignatureError:
-        print ("Carte falsifié !")
-        print ("Veuillez prevenir les autorités compétentes")
+        print ("Carte falsifiée !")
+        print ("Veuillez prévenir les autorités compétentes")
         sys.exit()
 
 def log(connection,debit):
@@ -197,9 +197,9 @@ def log(connection,debit):
 connection = connexion()
 
 while(True) :
-        print("1 - Voir le credit")
+        print("1 - Voir le crédit")
         print("2 - Payer")
-        print("3 - Crediter")
+        print("3 - Créditer")
         print("4 - Quitter")
         choix = input()
         print('')
