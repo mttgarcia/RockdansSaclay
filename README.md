@@ -1,4 +1,4 @@
-# RockdansSaclay
+# RockDansSaclay
 
 <p align="center">
   <img src="https://cdn.discordapp.com/attachments/550249271044079618/550440825344229386/rockdanssaclay.png">
@@ -14,3 +14,5 @@ Si les commandes ne se lancent pas utiliser la commande :
 1) chmod +x install
 2) chmod +x del
 3) chmod +x javacard
+
+Par : Yassine DGAYGUI / Quentin PEZZOLI / Matthieu GARCIA
