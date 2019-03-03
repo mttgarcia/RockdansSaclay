@@ -1,5 +1,9 @@
 # RockdansSaclay
 
+<p align="center">
+  <img src="https://cdn.discordapp.com/attachments/550249271044079618/550440825344229386/rockdanssaclay.png">
+</p>
+
 Pour installer l'applet sur la carte utiliser la commande : ./install
 
 Pour supprimer l'applet sur la carte utiliser la commande : ./del
