@@ -105,7 +105,7 @@ public class Participant extends Applet {
                                     private_key,//dest
                                     (short)0,//offset de dest
                                     PRIVATE_KEY_LENGTH);//Taille de la copie  
-
+        //Crédit mis de base a 500
         credit = 500;
         }
 
@@ -225,12 +225,9 @@ public class Participant extends Applet {
     public void crediter(APDU apdu, byte[] buffer) throws ISOException{
         apdu.setIncomingAndReceive();
         //Si le pin n'a pas été validé on sort
-        if (!pin.isValidated()) {
-            ISOException.throwIt(SW_PIN_VERIFICATION_REQUIRED);
-            }
         short debit = Util.makeShort(buffer[ISO7816.OFFSET_CDATA+1],buffer[ISO7816.OFFSET_CDATA]);
         credit = (short)(credit + debit);
-            }
+        }
 
 
     public void get_info(APDU apdu, byte[] buffer) throws ISOException{

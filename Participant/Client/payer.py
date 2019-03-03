@@ -17,6 +17,7 @@ global PIN
 PIN = False
 global AUTH
 AUTH = False
+
 def connexion():
     #Tant que la carte n'a pas été inséré
     while (True):
@@ -35,11 +36,11 @@ def connexion():
                 authentification(connection)
             break
         except NoCardException:
-            print("Veuillez inséré la carte")
+            print("Veuillez insérer la carte")
             time.sleep(5)
         except CardConnectionException:
             print("La carte a été retiré")
-            print("Veuillez inséré la carte")
+            print("Veuillez insérer la carte")
     return connection
 
 def entrer_pin(connection):
@@ -117,7 +118,7 @@ def crediter(connection):
         print("Entrer la carte a crediter")
         time.sleep(10)
         connection= connexion()
-        data, sw1, sw2 = connection.transmit([0xB0,0x3,0x00,0x00,0x00,debit])
+        data, sw1, sw2 = connection.transmit([0xB0,0x03,0x00,0x00,0x00,debit])
         print ("Le transfert à été effectué")
         return connection
     except CardConnectionException:
