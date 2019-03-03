@@ -1,5 +1,3 @@
 # RockdansSaclay
 
-WOWOWOWOWOWOWOWOWOWOWOO
-
-TROP BOOOOOO
+Pour installer l'applet sur la carte utiliser la commande :
