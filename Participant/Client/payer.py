@@ -11,7 +11,12 @@ from smartcard.Exceptions import *
 import sys
 import time
 from ecdsa import VerifyingKey, BadSignatureError, SigningKey
+import datetime
 
+global PIN
+PIN = False
+global AUTH
+AUTH = False
 def connexion():
     #Tant que la carte n'a pas été inséré
     while (True):
@@ -26,8 +31,8 @@ def connexion():
                 sys.exit()
             if((int(sw1)==144) and (int(sw2)==0)) :
                     print("Connexion etablie")
-            entrer_pin(connection)
-            authentification(connection)
+            if(AUTH == False):
+                authentification(connection)
             break
         except NoCardException:
             print("Veuillez inséré la carte")
@@ -38,6 +43,7 @@ def connexion():
     return connection
 
 def entrer_pin(connection):
+    global PIN
     try:
         print("Entrez le code pin :")
         while(True):
@@ -60,13 +66,15 @@ def entrer_pin(connection):
         #Si le code Pin est correct on continue
         if((int(sw1)==144) and (int(sw2)==0)) :
                 print("Pin correcte")
+                PIN = True
     except CardConnectionException:
             print("La carte a été retiré")
             sys.exit()
 
-def afficher_credit():
-    try : 
-        connection = connexion()
+def afficher_credit(connection):
+    try :
+        if (PIN == False):
+            entrer_pin(connection)
         #Affichage du credit
         print("Voici le credit restant :")
         data, sw1, sw2 = connection.transmit([0xB0,0x01,0x00,0x00,0x00])
@@ -77,28 +85,32 @@ def afficher_credit():
             print("La carte a été retiré")
             sys.exit()
 
-def payer():
+def payer(connection):
     try:
+        if (PIN == False) :
+            entrer_pin(connection)
         print("Entrez le montant a debiter")
         debit = int(input())
         if(debit>255) :
                 print("Le debit doit être inferrieur à 255")
         else :
-            connection = connexion()
             data, sw1, sw2 = connection.transmit([0xB0,0x2,0x00,0x00,0x00,debit])
             if((int(sw1)==99) and (int(sw2)==1)) :
                     print("Solde insufissant")
+            log(connection,debit)
+            print("Vous avez été débité de",debit)
             return debit, connection
     except CardConnectionException:
         print("La carte a été retiré")
         sys.exit()
 
-def crediter():
+def crediter(connection):
+    global PIN
     try:
-        debit, connection = payer()
+        debit, connection = payer(connection)
         #On deconecte la carte, et on laisse 3s pour retirer la carte
         connection.disconnect()
-        print ("Vous avez été débité de",debit)
+        PIN = False
         print("Retirer la carte")
         time.sleep(3)
         #Puis on laisse 10s pour insérer la seconde carte 
@@ -113,6 +125,7 @@ def crediter():
         sys.exit() 
 
 def authentification(connection):
+    global AUTH
     #On récupère la clé publique dans le fichier publib.pem
     vk = VerifyingKey.from_pem(open("Client/public.pem").read())
     data, sw1, sw2 = connection.transmit([0xB0,0x04,0x00,0x00,0x00])
@@ -149,6 +162,7 @@ def authentification(connection):
         #Si il retourne vrai on l'envoie à connexion
         vk.verify(sig, num_part)
         print("Carte authentifié !")
+        AUTH = True
         return 
     #Si il retourne l'exception mauvaise signature on prévient connexion
     except BadSignatureError:
@@ -156,7 +170,30 @@ def authentification(connection):
         print ("Veuillez prevenir les autorités compétentes")
         sys.exit()
 
+def log(connection,debit):
+    now = datetime.datetime.now()
+    data, sw1, sw2 = connection.transmit([0xB0,0x05,0x00,0x00,0x00])
+    nom = ''
+    prenom=''
+    num_part=''
+    date = now.strftime("%Y-%m-%d %H:%M")
+    cpt = 0
+    for i in data:
+        if (i != 0) :
+            if (cpt<12):
+                nom = nom + chr(i)
+            elif (cpt<24):
+                prenom = prenom + chr(i)
+            else :
+                num_part = num_part + str(i)
+        cpt += 1
+    fichier = open("log.txt","a")
+    logs = nom +' ' + prenom+ ' ' + num_part +' ' + str(debit) + 'credit ' + date + '\n'
+    fichier.write(logs)
+    fichier.close()
+    return
 
+connection = connexion()
 
 while(True) :
         print("1 - Voir le credit")
@@ -167,13 +204,13 @@ while(True) :
         print('')
 
         if (int(choix) == 1) :
-                afficher_credit()
+                afficher_credit(connection)
                 print('')
         if (int(choix) == 2) :
-                payer()
+                payer(connection)
                 print('')
         if (int(choix) == 3) :
-                connection = crediter()
+                connection = crediter(connection)
                 print('')
         if(int(choix) == 4) :
                 connection.disconnect()

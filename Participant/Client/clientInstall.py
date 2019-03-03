@@ -120,8 +120,6 @@ prenom = set_prenom()
 num_part = set_numpart()
 signature = set_signature(num_part)
 sk = set_sk()
-print(signature)
-print(num_part)
 #On définie la commande d'installation
 command = 'java -jar /home/grs/JavaCard/GlobalPlatformPro/gp.jar --install Participant221.cap --params '+pin1+pin2+nom+prenom+num_part+signature+sk
 
