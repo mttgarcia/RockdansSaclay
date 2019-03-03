@@ -15,4 +15,4 @@ Si les commandes ne se lancent pas utiliser la commande :
 2) chmod +x del
 3) chmod +x javacard
 
-Par : Yassine DGAYGUI / Quentin PEZZOLI / Matthieu GARCIA
+<b> Par : Yassine DGAYGUI / Quentin PEZZOLI / Matthieu GARCIA </b>
