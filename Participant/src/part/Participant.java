@@ -49,9 +49,9 @@ public class Participant extends Applet {
     private Participant(byte bArray[], short bOffset, byte bLength) {
         //Taille de l'aid
         byte aidLength = bArray[bOffset];
-        //Control info (on s'en fout c'est 0 faut le mettre pour faire joli et propre)
+        //Control info 
         short controlLength = (short)(bArray[(short)(bOffset+1+aidLength)]&(short)0x00FF);
-        //Taille des info 
+        //Taille des infos 
         short dataLength = (short)(bArray[(short)(bOffset+1+aidLength+1+controlLength)]&(short)0x00FF);
         byte taille = (byte)(PIN_LENGTH + NOM_LENGTH + PRENOM_LENGTH + NUM_PARTICIPANT_LENGTH + SIGNATURE_CARTE_LENGTH+ PRIVATE_KEY_LENGTH);
         
