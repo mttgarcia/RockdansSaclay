@@ -15,9 +15,10 @@ public class Participant extends Applet {
     static final byte INS_AFFICHER_CREDIT = 0x01;
     static final byte INS_PAYER = 0x02;
     static final byte INS_CREDITER = 0x03;
+    static final byte INS_AUTHENTIFICATION = 0x04;
     //Exception
     static final short SW_SOLDE_INSSUFISANT = 0x6301;
-    static final short SW_PIN_VERIFICATION_REQUIRED = 0x6302;
+    static final short SW_PIN_VERIFICATION_REQUIRED = 0x6305;
     static final short SW_PIN_VERIFICATION_FAILED = 0x6303;
     //Taille
     private static final byte PIN_LENGTH = 0x02;
@@ -25,8 +26,8 @@ public class Participant extends Applet {
     private static final byte PRENOM_LENGTH = 0x0c;
     private static final byte NUM_PARTICIPANT_LENGTH = 0x05;
     private static final byte CREDIT_LENGTH = 0x02;
-    private static final byte PRIVATE_KEY_LENGTH = 0x20;
-    private static final byte SIGNATURE_CARTE_LENGTH = 0x20;
+    private static final byte PRIVATE_KEY_LENGTH = 0x1c;
+    private static final byte SIGNATURE_CARTE_LENGTH = 0x38;
 
     //PIN
     private static final byte PIN_TRY_LIMIT = 0x03;
@@ -51,7 +52,9 @@ public class Participant extends Applet {
         short controlLength = (short)(bArray[(short)(bOffset+1+aidLength)]&(short)0x00FF);
         //Taille des info 
         short dataLength = (short)(bArray[(short)(bOffset+1+aidLength+1+controlLength)]&(short)0x00FF);
-        if ((byte)dataLength != (byte)(PIN_LENGTH + NOM_LENGTH + PRENOM_LENGTH + NUM_PARTICIPANT_LENGTH + SIGNATURE_CARTE_LENGTH + PRIVATE_KEY_LENGTH)) {
+        byte taille = (byte)(PIN_LENGTH + NOM_LENGTH + PRENOM_LENGTH + NUM_PARTICIPANT_LENGTH + SIGNATURE_CARTE_LENGTH+ PRIVATE_KEY_LENGTH);
+        
+        if ((byte)dataLength != taille) {
             ISOException.throwIt(ISO7816.SW_WRONG_LENGTH );
         } 
 
@@ -82,7 +85,7 @@ public class Participant extends Applet {
         num_participant = new byte[(short)NUM_PARTICIPANT_LENGTH];
         Util.arrayCopyNonAtomic(bArray,//source
                                     (short) (bOffset+1+aidLength+1+controlLength+1+PIN_LENGTH+NOM_LENGTH+PRENOM_LENGTH),//offset de source
-                                    prenom,//dest
+                                    num_participant,//dest
                                     (short)0,//offset de dest
                                     NUM_PARTICIPANT_LENGTH);//Taille de la copie
 
@@ -103,13 +106,12 @@ public class Participant extends Applet {
                                     PRIVATE_KEY_LENGTH);//Taille de la copie  
 
         credit = 500;
-
-
-    }
+        }
 
     public static void install(byte bArray[], short bOffset, byte bLength) throws ISOException {
+        
         new Participant(bArray,bOffset,bLength).register();
-    }
+        }
 
     public void process(APDU apdu) throws ISOException {
 
@@ -119,45 +121,52 @@ public class Participant extends Applet {
 
         if (buffer[ISO7816.OFFSET_CLA] != CLA_MONAPPLET) {
             ISOException.throwIt(ISO7816.SW_CLA_NOT_SUPPORTED);
-        }
-            switch (buffer[ISO7816.OFFSET_INS]) {
+            }
+        switch (buffer[ISO7816.OFFSET_INS]) {
 
-                case INS_CHECK_PIN:
-                    //Si le PIN est deja entree on sort
-                    if (pin.isValidated()) {
-                        return;         
-                        }
-                    //Si le pin est bon on rentre dans le if
-                    if (verify(apdu)) {
-                        //On met dans le buffer le nombre d'essais de PIN possible
-                        buffer[0] = pin.getTriesRemaining();
-                        //On envoie le buffer à l'offset 0 de la taille de 1 
-                        apdu.setOutgoingAndSend((short) 0, (short)1);
-                        return;
-                        }
-                    ISOException.throwIt(SW_PIN_VERIFICATION_FAILED);
-                    break;
+            case INS_CHECK_PIN:
+                ins_pin(apdu,buffer);
+                break;
 
-                case INS_AFFICHER_CREDIT:
-                    print_credit(apdu);
-                    break;
+            case INS_AFFICHER_CREDIT:
+                print_credit(apdu,buffer);
+                break;
 
-                case INS_PAYER:
-                    payer(apdu);
-                    break;
+            case INS_PAYER:
+                payer(apdu,buffer);
+                break;
 
-                case INS_CREDITER:
-                    crediter(apdu);
-                    break;
+            case INS_CREDITER:
+                crediter(apdu,buffer);
+                break;
 
-                default:
-                        ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
-                }
+            case INS_AUTHENTIFICATION:
+                authentification(apdu,buffer);
+                break;
+
+
+            default:
+                ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+            }
         }
 
-    static boolean verify(APDU apdu) throws ISOException {
-        //On récupére le buffer du apdu et on le met dans cette variable
-        byte[] buffer = apdu.getBuffer();
+    static void ins_pin(APDU apdu,byte[] buffer) throws ISOException {
+        //Si le PIN est deja entree on sort
+        if (pin.isValidated()) {
+            return;         
+            }
+        //Si le pin est bon on rentre dans le if
+        if (verify(apdu)) {
+            //On met dans le buffer le nombre d'essais de PIN possible
+            buffer[0] = pin.getTriesRemaining();
+            //On envoie le buffer à l'offset 0 de la taille de 1 
+            apdu.setOutgoingAndSend((short) 0, (short)1);
+            return;
+            }
+        ISOException.throwIt(SW_PIN_VERIFICATION_FAILED);    
+        }
+
+    static boolean verify(APDU apdu,byte[] buffer) throws ISOException {
         //Si le PIN est plus grand que demander on sort une erreur
         if (buffer[ISO7816.OFFSET_LC] != PIN_LENGTH) {
             ISOException.throwIt(ISO7816.SW_WRONG_LENGTH );
@@ -170,10 +179,15 @@ public class Participant extends Applet {
                                  PIN_LENGTH);//La taille du PIN
         return res; //True or False
         }           
+    //Envoie la signature de la carte
+    static void authentification(APDU apdu,byte[] buffer)throws ISOException {
+            Util.arrayCopyNonAtomic(signature_carte,(short)0,buffer,(short)0,SIGNATURE_CARTE_LENGTH);
+            Util.arrayCopyNonAtomic(num_participant,(short)0,buffer,(short)SIGNATURE_CARTE_LENGTH,NUM_PARTICIPANT_LENGTH);
+            apdu.setOutgoingAndSend((short) 0, (short)(SIGNATURE_CARTE_LENGTH+NUM_PARTICIPANT_LENGTH));
+            return
+        }
 
-    public void print_credit(APDU apdu) throws ISOException {
-        //On prend le buffer de l'apdu
-        byte[] buffer = apdu.getBuffer();
+    public void print_credit(APDU apdu,byte[] buffer) throws ISOException {
         //Si le pin est valide on rentre dans le if
         if (pin.isValidated()) {
             Util.setShort(buffer,(short) 0,credit);
@@ -185,9 +199,7 @@ public class Participant extends Applet {
         ISOException.throwIt(SW_PIN_VERIFICATION_REQUIRED);
         }
 
-    public void payer(APDU apdu) throws ISOException{
-        //On prend le buffer de l'apdu
-        byte[] buffer = apdu.getBuffer();
+    public void payer(APDU apdu,byte[] buffer) throws ISOException{
         apdu.setIncomingAndReceive();
         //Si le pin n'a pas été validé on sort
         if (!pin.isValidated()) {
@@ -204,9 +216,7 @@ public class Participant extends Applet {
                 }
             }
 
-    public void crediter(APDU apdu) throws ISOException{
-        //On prend le buffer de l'apdu
-        byte[] buffer = apdu.getBuffer();
+    public void crediter(APDU apdu,byte[] buffer) throws ISOException{
         apdu.setIncomingAndReceive();
         //Si le pin n'a pas été validé on sort
         if (!pin.isValidated()) {
