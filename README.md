@@ -7,6 +7,6 @@ Pour supprimer l'applet sur la carte utiliser la commande : ./del
 Pour utiliser le client lancer la commande : ./javacard
 
 Si les commandes ne se lancent pas utiliser la commande : 
-chmod +x install
-chmod +x del
-chmod +x javacard
+1) chmod +x install
+2) chmod +x del
+3) chmod +x javacard
