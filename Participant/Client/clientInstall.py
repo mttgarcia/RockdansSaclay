@@ -94,7 +94,7 @@ def set_numpart():
     num_part_hex = hex(int(num_part)).replace('0x','')
     #Si il est trop petit on fait du bourrage
     if (len(num_part_hex)<taille_numpart):
-            for i in range(taille_numpart-len(num_part)):
+            for i in range(taille_numpart-len(num_part_hex)):
                     num_part_hex = num_part_hex+'0'
     return num_part_hex,num_part
 
@@ -106,11 +106,11 @@ def set_sk():
     sk_hex = sk.to_string().hex()
     return sk_hex, str(vk.to_string())
 
-def set_signature(num_part):
+def set_signature(num_part_hex):
     #On récupère la clé privée du TPE
     sk_client = SigningKey.from_pem(open("Client/private.pem").read())
     #On signe le numéro participant
-    signature = sk_client.sign(num_part.encode())
+    signature = sk_client.sign(num_part_hex.encode())
     #On passe la signature en hexa
     signature_hex = signature.hex()
     return signature_hex,str(signature)
@@ -127,7 +127,7 @@ pin1,pin2 = set_pin()
 nom_hex,nom = set_nom()
 prenom_hex,prenom = set_prenom()
 num_part_hex,num_part = set_numpart()
-signature_hex,signature = set_signature(num_part)
+signature_hex,signature = set_signature(num_part_hex)
 sk_hex,vk = set_sk()
 log(nom,prenom,num_part,signature,vk)
 #On définie la commande d'installation
