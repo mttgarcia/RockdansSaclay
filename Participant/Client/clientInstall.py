@@ -22,7 +22,7 @@ def set_pin():
         pin.append(str(alea))
     #On passe le tableau en string
     pin = ''.join(pin)
-    print ("Le pin de cette carte est le : ",pin)
+    print ("Le pin de cette carte est le :",pin)
     print("Veuillez conserver le PIN précieusement, il ne vous ne sera pas recommuniqué ")
     #On sépare le pin en 2 pour le passer a la carte
     pin1 = hex(int(pin[0]+pin[1])).replace('0x','')
@@ -39,7 +39,7 @@ def set_prenom():
     taille_name = 24
     while (True):
         #Saisie du prenom
-        prenom = input("Entrez votre prénom : ")
+        prenom = input("Entrez votre prenom : ")
         #Erreur si les caractères ne sont pas cohérents
         if not re.match("^[a-z,A-Z]*$", prenom):
             print ("Erreur, seules les lettres de a à z sont tolérées!")
@@ -83,7 +83,7 @@ def set_numpart():
     #On récupère le dernier numéro participant +1 en lecture
     r = open("Client/num_participant.txt","r")
     num_part = r.read()
-    print("Numéro participant : ",num_part)
+    print("Numero participant :",num_part)
     #On ferme le fichier
     r.close()
     #On le rouvre en écriture pour ajouter 1 pour le prochain numéro participant

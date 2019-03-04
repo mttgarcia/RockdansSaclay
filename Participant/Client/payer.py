@@ -88,8 +88,7 @@ def afficher_credit(connection):
 
 def payer(connection):
     try:
-        if (PIN == False) :
-            entrer_pin(connection)
+        entrer_pin(connection)
         print("Entrez le montant a débiter")
         debit = int(input())
         if(debit>255) :
@@ -100,15 +99,15 @@ def payer(connection):
                     print("Solde insuffisant")
             log(connection,debit)
             print("Vous avez été débité de ",debit)
-            return debit, connection
+            return debit
     except CardConnectionException:
         print("La carte a été retirée")
         sys.exit()
 
-def crediter(connection):
+def echange(connection):
     global PIN
     try:
-        debit, connection = payer(connection)
+        debit = payer(connection)
         #On déconnecte la carte, et on laisse 3s pour retirer la carte
         connection.disconnect()
         PIN = False
@@ -194,13 +193,32 @@ def log(connection,debit):
     fichier.close()
     return
 
-connection = connexion()
+def crediter(connection):
+    try:
+        if (PIN == False) :
+            entrer_pin(connection)
+        print("Entrez le montant a créditer")
+        debit = int(input())
+        if(debit>255) :
+                print("Le crédit doit être inférieur à 255")
+        else :
+            data, sw1, sw2 = connection.transmit([0xB0,0x3,0x00,0x00,0x00,debit])
+            if((int(sw1)==99) and (int(sw2)==1)) :
+                    print("Solde insuffisant")
+            log(connection,debit)
+            print("Vous avez été crédité de ",debit)
+            return connection
+    except CardConnectionException:
+        print("La carte a été retirée")
+        sys.exit()
 
+connection = connexion()
 while(True) :
         print("1 - Voir le crédit")
         print("2 - Payer")
-        print("3 - Créditer")
-        print("4 - Quitter")
+        print("3 - Echanger")
+        print("4 - Créditer")
+        print("5 - Quitter")
         choix = input()
         print('')
 
@@ -211,8 +229,11 @@ while(True) :
                 payer(connection)
                 print('')
         if (int(choix) == 3) :
+                connection = echange(connection)
+                print('')
+        if (int(choix) == 4) :
                 connection = crediter(connection)
                 print('')
-        if(int(choix) == 4) :
+        if(int(choix) == 5) :
                 connection.disconnect()
                 sys.exit()
