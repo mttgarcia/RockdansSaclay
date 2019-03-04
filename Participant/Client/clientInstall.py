@@ -23,6 +23,7 @@ def set_pin():
     #On passe le tableau en string
     pin = ''.join(pin)
     print ("Le pin de cette carte est le :",pin)
+    print("Veuillez conserver le PIN précieusement, il ne vous ne sera pas recommuniqué ")
     #On sépare le pin en 2 pour le passer a la carte
     pin1 = hex(int(pin[0]+pin[1])).replace('0x','')
     pin2 = hex(int(pin[2]+pin[3])).replace('0x','')
